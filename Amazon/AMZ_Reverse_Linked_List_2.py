@@ -36,17 +36,21 @@
 
 # Time complexity is O(n), because we need to traverse elements upto n-th. Space complexity is O(1).
 
-
-
-
-
-
 # Definition for singly-linked list.
 class ListNode:
     def __init__(self, val=0, next=None):
         self.val = val
         self.next = next
 
+def create_linkedlist(point_list):
+    head = ListNode()
+    return_value = head
+    for i in range(len(point_list)):
+        head.val = point_list[i]
+        head.next = ListNode()
+
+        head = head.next
+    return return_value
 class Solution:
     def reverseBetween(self, head: ListNode, m: int, n: int):
         if m == n:
@@ -72,9 +76,65 @@ class Solution:
         pre.next = reverse
 
         return dummyNode.next
+linked_list = create_linkedlist([1,2,3,4,5])
+linked_list2 = create_linkedlist([5])
+print(Solution().reverseBetween(linked_list, 2, 4))
+print(Solution().reverseBetween(linked_list2, 1, 1))
+
+
+## Recruise solution
+
+## COMPLEXITY
+
+# For List with [1, 2, 3, 4, 5], supposed m == 2 and n == 4
+
+# Step1:
+# The part I need to reversed is node 2 to node 4, which has n - m + 1 = 3 nodes.
+# Therefore, I would like to maintain a window with n - m + 1 nodes with the window's head whead and window's tail wtail, 
+# then if whead is head, wtail would be the next n-m node from head.
+# [123]45 => whead is 1 and wtail is 3
+
+# Step2:
+# And to get to the right reversed portion we want, we need to shift the window m-1 times
+# 1[234]5 => whead is 2 and wtail is 4
+
+# Step3: Isolate the nodes inside the window, reverse the window as Reverse Linked List
+
+# Step4: combine the outside node with reversed node.
+# To do so, I need to record the head outside the window ohead, and the tail outside the window otail
+
+# ohead is 1, otail is 5
+# 1-[432]-5
+# Implementation detail: Since in step 4, you need to let ohead.next = reversed_headIf you create a dummy node, 
+# you can save some lines for m == 1 cases, where ohead would be None and ohead.next would fail the program.
 
 
 
+class Solution2():
+    def reverseBetween(self, head, m, n):
+        if m >= n:
+            return head
+        #Step 1#    
+        ohead = dummy = ListNode(0)
+        whead = wtail = head
+        dummy.next = head
+        for i in range(n-m):
+            wtail = wtail.next
+        #Step 2#  
+        for i in range(m-1):
+            ohead, whead, wtail = whead, whead.next, wtail.next
+        #Step 3#  
+        otail, wtail.next = wtail.next, None
+        revhead, revtail = self.reverse(whead)
+        #Step 4#  
+        ohead.next, revtail.next = revhead, otail
+        return dummy.next
+            
+    def reverse(self, head):
+        pre, cur, tail = None, head, head
+        while cur:
+            cur.next, pre, cur = pre, cur, cur.next
+        return pre, tail
 
-print(Solution().reverseBetween([1,2,3,4,5], 2, 4))
-print(Solution().reverseBetween([5], 1, 1))
+print(Solution2().reverseBetween(linked_list, 2, 4))
+print(Solution2().reverseBetween(linked_list2, 1, 1))
